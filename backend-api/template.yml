@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      CodeUri: .
+      MemorySize: 128
+      Timeout: 3
+      Environment:
+        Variables:
+          DB_HOST: "localhost"
+          DB_USER: "math974"
+          DB_PASSWORD: "H&p6Y4MVdD4heQvRsJ*K^ioEQM4nFL"
+          DB_NAME: "mydatabase"
+      Events:
+        GetApi:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: GET
+        PostApi:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: POST
+        PutApi:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: PUT
+        DeleteApi:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: DELETE
