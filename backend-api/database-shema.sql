@@ -10,3 +10,5 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE
 );
+
+INSERT INTO users (name, email) VALUES ('John Doe', 'john.doe@example.com');

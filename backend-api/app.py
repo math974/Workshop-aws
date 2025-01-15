@@ -11,24 +11,33 @@ db_config = {
 }
 
 def lambda_handler(event, context):
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
+        "Access-Control-Allow-Headers": "Content-Type"
+    }
 
-    print("DB_HOST:", os.getenv('DB_HOST'))
-    print("DB_USER:", os.getenv('DB_USER'))
-    print("DB_PASSWORD:", os.getenv('DB_PASSWORD'))
-    print("DB_NAME:", os.getenv('DB_NAME'))
+    if event['httpMethod'] == 'OPTIONS':
+        return {
+            "statusCode": 200,
+            "headers": headers,
+            "body": ""
+        }
+
     connection = pymysql.connect(
         host=db_config['host'],
         user=db_config['user'],
         password=db_config['password'],
         database=db_config['database']
     )
+
     try:
         http_method = event['httpMethod']
-        body = json.loads(event.get('body', '{}'))
         response = {}
 
+        body = json.loads(event.get('body', '{}')) if http_method != 'GET' else {}
+
         if http_method == 'POST':
-            # Créer un enregistrement
             with connection.cursor() as cursor:
                 sql = "INSERT INTO users (name, email) VALUES (%s, %s)"
                 cursor.execute(sql, (body['name'], body['email']))
@@ -36,14 +45,12 @@ def lambda_handler(event, context):
             response = {"message": "Record created successfully"}
 
         elif http_method == 'GET':
-            # Lire les enregistrements
             with connection.cursor() as cursor:
                 cursor.execute("SELECT * FROM users")
                 rows = cursor.fetchall()
             response = {"data": rows}
 
         elif http_method == 'PUT':
-            # Mettre à jour un enregistrement
             with connection.cursor() as cursor:
                 sql = "UPDATE users SET name=%s, email=%s WHERE id=%s"
                 cursor.execute(sql, (body['name'], body['email'], body['id']))
@@ -51,7 +58,6 @@ def lambda_handler(event, context):
             response = {"message": "Record updated successfully"}
 
         elif http_method == 'DELETE':
-            # Supprimer un enregistrement
             with connection.cursor() as cursor:
                 sql = "DELETE FROM users WHERE id=%s"
                 cursor.execute(sql, (body['id'],))
@@ -63,12 +69,14 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
+            "headers": headers,
             "body": json.dumps(response)
         }
 
     except Exception as e:
         return {
             "statusCode": 500,
+            "headers": headers,
             "body": json.dumps({"error": str(e)})
         }
 

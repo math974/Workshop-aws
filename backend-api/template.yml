@@ -1,4 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'content-type'"
+      AllowOrigin: "'*'"
+      # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
 Resources:
   LambdaFunction:
     Type: AWS::Serverless::Function
@@ -10,9 +17,9 @@ Resources:
       Timeout: 3
       Environment:
         Variables:
-          DB_HOST: "localhost"
-          DB_USER: "math974"
-          DB_PASSWORD: "H&p6Y4MVdD4heQvRsJ*K^ioEQM4nFL"
+          DB_HOST: "172.17.0.2"
+          DB_USER: "root"
+          DB_PASSWORD: "password"
           DB_NAME: "mydatabase"
       Events:
         GetApi:
