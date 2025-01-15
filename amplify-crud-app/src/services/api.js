@@ -14,7 +14,7 @@ export const createRecord = async (data) => {
 };
 
 export const updateRecord = async (data) => {
-  await fetch(`${API_URL}/users/${data.id}`, {
+  await fetch(`${API_URL}/users`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -22,7 +22,17 @@ export const updateRecord = async (data) => {
 };
 
 export const deleteRecord = async (id) => {
-  await fetch(`${API_URL}/users/${id}`, {
-    method: "DELETE",
-  });
+  try {
+    const response = await fetch(`${API_URL}/users`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: id }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete record');
+    }
+  } catch (error) {
+    console.error('Error deleting record:', error);
+  }
 };

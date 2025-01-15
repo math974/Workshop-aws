@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Globals:
   Api:
     Cors:
-      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
       AllowHeaders: "'content-type'"
       AllowOrigin: "'*'"
       # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
