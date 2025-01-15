@@ -36,6 +36,7 @@ def lambda_handler(event, context):
         response = {}
 
         body = json.loads(event.get('body', '{}')) if http_method != 'GET' else {}
+        print(f"Body querie: {body}")
 
         if http_method == 'POST':
             with connection.cursor() as cursor:
@@ -51,6 +52,7 @@ def lambda_handler(event, context):
             response = {"data": rows}
 
         elif http_method == 'PUT':
+            
             with connection.cursor() as cursor:
                 sql = "UPDATE users SET name=%s, email=%s WHERE id=%s"
                 cursor.execute(sql, (body['name'], body['email'], body['id']))

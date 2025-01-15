@@ -8,13 +8,14 @@ const queryClient = new QueryClient();
 function App() {
   const [formData, setFormData] = useState({ id: '', name: '', email: '' });
   const [isEditing, setIsEditing] = useState(false);
+  const [editRowId, setEditRowId] = useState(null);
+  const [editedRowData, setEditedRowData] = useState({});
 
   // Fetching data using React Query
   const { data: records = [], isLoading, error } = useQuery({
     queryKey: ['records'],
     queryFn: async () => {
       const data = await getRecords();
-      console.log("Fetched records:", data);
       return data;
     },
   });
@@ -35,20 +36,32 @@ function App() {
     onSuccess: () => queryClient.invalidateQueries(['records']),
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isEditing) {
-      mutationUpdate.mutate(formData);
-    } else {
-      mutationCreate.mutate(formData);
-    }
-    setFormData({ id: '', name: '', email: '' });
-    setIsEditing(false);
+  const handleEditCell = (id, field, value) => {
+    setEditedRowData((prevData) => ({
+      ...prevData,
+      [id]: { ...prevData[id], [field]: value },
+    }));
   };
 
-  const handleEdit = (record) => {
-    setFormData(record);
-    setIsEditing(true);
+  const handleCellBlur = (id) => {
+
+    const updatedData = editedRowData[id];
+
+    if (updatedData) {
+      const completeData = {
+        id,
+        name: updatedData.name || records.data.find(record => record[0] === id)[1],
+        email: updatedData.email || records.data.find(record => record[0] === id)[2]
+      };
+
+      mutationUpdate.mutate(completeData);
+      setEditRowId(null);
+      setEditedRowData((prevData) => {
+        const newData = { ...prevData };
+        delete newData[id];
+        return newData;
+      });
+    }
   };
 
   const handleDelete = (id) => {
@@ -60,30 +73,7 @@ function App() {
 
   return (
     <Container>
-      <h1>CRUD App with MUI and React Query</h1>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Name"
-          value={formData.name || ''}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Email"
-          type="email"
-          value={formData.email || ''}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-          fullWidth
-          margin="normal"
-        />
-        <Button type="submit" variant="contained" color="primary">
-          {isEditing ? 'Update' : 'Create'}
-        </Button>
-      </form>
-
+      <h1>CRUD App with Editable Table</h1>
       <TableContainer component={Paper} style={{ marginTop: 20 }}>
         <Table>
           <TableHead>
@@ -97,12 +87,30 @@ function App() {
             {Array.isArray(records.data) ? (
               records.data.map((record) => (
                 <TableRow key={record[0]}>
-                  <TableCell>{record[1]}</TableCell>
-                  <TableCell>{record[2]}</TableCell>
                   <TableCell>
-                    <Button variant="outlined" onClick={() => handleEdit(record)}>
-                      Edit
-                    </Button>
+                    {editRowId === record[0] ? (
+                      <TextField
+                        value={editedRowData[record[0]]?.name || record[1]}
+                        onChange={(e) => handleEditCell(record[0], 'name', e.target.value)}
+                        onBlur={() => handleCellBlur(record[0])}
+                        autoFocus
+                      />
+                    ) : (
+                      <span onClick={() => setEditRowId(record[0])}>{record[1]}</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {editRowId === record[0] ? (
+                      <TextField
+                        value={editedRowData[record[0]]?.email || record[2]}
+                        onChange={(e) => handleEditCell(record[0], 'email', e.target.value)}
+                        onBlur={() => handleCellBlur(record[0])}
+                      />
+                    ) : (
+                      <span onClick={() => setEditRowId(record[0])}>{record[2]}</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <Button variant="outlined" color="secondary" onClick={() => handleDelete(record[0])}>
                       Delete
                     </Button>
@@ -130,4 +138,3 @@ function AppWrapper() {
 }
 
 export default AppWrapper;
-
